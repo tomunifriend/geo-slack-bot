@@ -14,6 +14,7 @@ import re
 import json
 import html
 import urllib.request
+import urllib.parse
 import xml.etree.ElementTree as ET
 
 # ============================================================
@@ -57,6 +58,10 @@ KEYWORDS = [
 
 # 3) 한 번 실행에 최대 몇 개까지 올릴지 (폭탄 방지)
 MAX_POST_PER_RUN = 10
+
+# 4) 제목·요약을 한국어로 번역해서 함께 올릴지 (True/False). 무료, API 키 불필요.
+#    이미 한국어인 글(GeekNews 등)은 자동으로 번역을 건너뜁니다.
+TRANSLATE_TO_KOREAN = True
 
 # ============================================================
 # 여기부터는 손대지 않아도 됩니다
@@ -169,16 +174,58 @@ def save_seen(seen_list):
         json.dump(trimmed, f, ensure_ascii=False, indent=0)
 
 
+def _has_hangul(s):
+    return any("가" <= ch <= "힣" for ch in (s or ""))
+
+
+def translate_ko(text):
+    """영어(등) 텍스트를 한국어로 번역. 무료 엔드포인트 사용, 키 불필요.
+    이미 한국어면 그대로 두고, 실패하면 원문을 그대로 반환(안전장치)."""
+    text = (text or "").strip()
+    if not text or not TRANSLATE_TO_KOREAN or _has_hangul(text):
+        return text
+    # 1순위: Google 무료 번역 엔드포인트
+    try:
+        q = urllib.parse.quote(text[:900])
+        url = ("https://translate.googleapis.com/translate_a/single"
+               f"?client=gtx&sl=auto&tl=ko&dt=t&q={q}")
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = json.loads(r.read().decode("utf-8", "replace"))
+        out = "".join(seg[0] for seg in data[0] if seg and seg[0])
+        if out.strip():
+            return out.strip()
+    except Exception:  # noqa
+        pass
+    # 2순위: MyMemory 무료 API
+    try:
+        q = urllib.parse.quote(text[:450])
+        url = f"https://api.mymemory.translated.net/get?q={q}&langpair=en|ko"
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = json.loads(r.read().decode("utf-8", "replace"))
+        out = ((data.get("responseData") or {}).get("translatedText") or "").strip()
+        if out:
+            return out
+    except Exception:  # noqa
+        pass
+    return text  # 둘 다 실패하면 원문 유지
+
+
 def post_to_slack(item):
-    title = item["title"]
+    ko_title = translate_ko(item["title"])
     link = item["link"]
     meta = f"{item['feed']}"
     if item["date"]:
         meta += f" · {item['date']}"
-    if link:
-        text = f"*<{link}|{title}>*\n_{meta}_"
-    else:
-        text = f"*{title}*\n_{meta}_"
+    lines = [f"*<{link}|{ko_title}>*" if link else f"*{ko_title}*"]
+    if item.get("desc"):
+        ko_desc = translate_ko(item["desc"][:300])
+        if len(ko_desc) > 150:
+            ko_desc = ko_desc[:150].rstrip() + "…"
+        lines.append(ko_desc)
+    lines.append(f"_{meta}_")
+    text = "\n".join(lines)
     payload = json.dumps({"text": text}).encode("utf-8")
 
     if DRY_RUN or not SLACK_WEBHOOK:
