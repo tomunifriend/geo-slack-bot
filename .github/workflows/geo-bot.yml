@@ -2,7 +2,7 @@ name: GEO Slack Bot
 
 on:
   schedule:
-    - cron: '0 * * * *'      # 매시 정각(UTC)마다 실행. 한국시간 기준으로도 매시간.
+    - cron: '0 0 * * *'      # 매시 정각(UTC)마다 실행. 한국시간 기준으로도 매시간.
   workflow_dispatch:          # Actions 탭에서 손으로 즉시 실행하는 버튼
 
 permissions:
