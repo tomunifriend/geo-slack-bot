@@ -1,0 +1,34 @@
+name: GEO Slack Bot
+
+on:
+  schedule:
+    - cron: '0 * * * *'      # 매시 정각(UTC)마다 실행. 한국시간 기준으로도 매시간.
+  workflow_dispatch:          # Actions 탭에서 손으로 즉시 실행하는 버튼
+
+permissions:
+  contents: write             # seen.json 저장(커밋)을 위해 필요
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 가져오기
+        uses: actions/checkout@v4
+
+      - name: 파이썬 준비
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 봇 실행
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: python geo_bot.py
+
+      - name: 읽은 글 목록 저장 (중복 방지 + 자동 유지)
+        run: |
+          git config user.name "geo-bot"
+          git config user.email "geo-bot@users.noreply.github.com"
+          git add seen.json
+          git commit -m "chore: update seen cache" || echo "변경 없음"
+          git push || echo "푸시할 것 없음"
