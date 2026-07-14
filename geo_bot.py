@@ -45,8 +45,7 @@ FEEDS = [
 KEYWORDS = [
     # ── GEO 개념 ──
     "GEO", "AEO", "SEO",
-    "AI Overview", "AI Mode", "AI search", "ChatGPT", "Perplexity",
-    "chatbot", "agentic", "zero-click"
+    "AI Overview", "AI Mode", "AI search", "ChatGPT", "Perplexity", "zero-click"
     # ── 모델 출시·업데이트 뉴스 ──
     "Gemini", "Claude", "Copilot", "Anthropic", "GPT", "Grok", 
      "Google AI", "AI model", "language model"
