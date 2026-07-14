@@ -44,16 +44,12 @@ FEEDS = [
 #    비워두면(=[]) 필터 없이 전부 올립니다.
 KEYWORDS = [
     # ── GEO 개념 ──
-    "GEO", "AEO", "generative engine", "generative AI", "answer engine",
-    "AI Overview", "AI Mode", "AI search", "AI visibility", "AI citation",
-    "AI agent", "cited", "citation", "LLM", "llms.txt", "ChatGPT", "Perplexity",
-    "OpenAI", "conversational search", "chatbot", "agentic", "zero-click",
-    "OKF", "Open Knowledge Format",
+    "GEO", "AEO", "SEO",
+    "AI Overview", "AI Mode", "AI search", "ChatGPT", "Perplexity",
+    "chatbot", "agentic", "zero-click"
     # ── 모델 출시·업데이트 뉴스 ──
-    "Gemini", "Claude", "Copilot", "Anthropic", "GPT", "Grok", "Llama",
-    "Mistral", "DeepSeek", "Gemma", "Google AI", "AI model", "language model",
-    # ── 한국어 소스(GeekNews)용 ──
-    "생성형", "챗봇", "언어모델", "에이전트",
+    "Gemini", "Claude", "Copilot", "Anthropic", "GPT", "Grok", 
+     "Google AI", "AI model", "language model"
 ]
 
 # 3) 한 번 실행에 최대 몇 개까지 올릴지 (폭탄 방지)
